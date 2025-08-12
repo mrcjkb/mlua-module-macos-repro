@@ -38,17 +38,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-        if: "!startsWith(matrix.os, 'windows')"
-
-      - name: Nix devShell
-        uses: nicknovitski/nix-develop@v1.2.1
-        if: "!startsWith(matrix.os, 'windows')"
-
       - name: Install Rust Toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
-        if: startsWith(matrix.os, 'windows')
 
       - name: Install C/C++ Compiler
         uses: rlalik/setup-cpp-compiler@master
