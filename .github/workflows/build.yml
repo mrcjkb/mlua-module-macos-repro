@@ -51,6 +51,10 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         if: "startsWith(matrix.os, 'windows')"
 
+      - name: "Setup environment for aarch64-darwin"
+        run: echo "RUSTFLAGS=${RUSTFLAGS} -C link-arg=-undefined -C link-arg=dynamic_lookup" >> "${GITHUB_ENV}"
+        if: startsWith(matrix.target, 'aarch64-apple-darwin')
+
       - name: Build
         run: |
           cargo build
