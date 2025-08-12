@@ -30,8 +30,6 @@
           with pkgs.rustPlatform; [
             cargo
             rustc
-            rustfmt
-            rust-analyzer
           ];
         };
       };
