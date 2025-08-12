@@ -1,0 +1,66 @@
+name: build (binary artifacts)
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  CARGO_NET_RETRY: 10
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  RUSTFLAGS: -D warnings
+  RUSTUP_MAX_RETRIES: 10
+
+jobs:
+  dist-package:
+    continue-on-error: true
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-15
+          - target: x86_64-pc-windows-msvc
+            os: windows-2025
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-22.04
+      fail-fast: false
+    timeout-minutes: 120
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        if: "!startsWith(matrix.os, 'windows')"
+
+      - name: Nix devShell
+        uses: nicknovitski/nix-develop@v1.2.1
+        if: "!startsWith(matrix.os, 'windows')"
+
+      - name: Install Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        if: startsWith(matrix.os, 'windows')
+
+      - name: Install C/C++ Compiler
+        uses: rlalik/setup-cpp-compiler@master
+        with:
+          compiler: clang-latest
+        if: "startsWith(matrix.os, 'windows')"
+
+      - name: Install MSVC Compiler Toolchain
+        uses: ilammy/msvc-dev-cmd@v1
+        if: "startsWith(matrix.os, 'windows')"
+
+      - name: Build
+        run: |
+          cargo build
+        if: "!startsWith(matrix.os, 'windows')"
